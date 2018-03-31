@@ -49,7 +49,7 @@ tasks:
       list: '{? trakt.anime ?}'
       type: shows
     if:
-      - trakt_watched: accept
+      - "tvdb_status != 'Ended' and trakt_watched": accept
     list_add:
       - sonarr_list:
           base_url: http://localhost
@@ -97,6 +97,7 @@ tasks:
       - seen
       - seen_info_hash
       - retry_failed
+    thetvdb_lookup: yes
     trakt_lookup:
       account: "{? trakt.account ?}"
       username: "{? trakt.account ?}"
@@ -105,7 +106,7 @@ tasks:
       list: '{? trakt.series ?}'
       type: shows
     if:
-      - trakt_watched: accept
+      - "tvdb_status != 'Ended' and trakt_watched": accept
     list_add:
       - sonarr_list:
           base_url: http://localhost
@@ -141,10 +142,40 @@ tasks:
           type: movies
 
 ### CLEANUP-SONARR #
-# Remove any shows from Sonarr that are in the deleted list
+# Archive any shows that have ended and have finished, remove from Sonarr and add to archive
 
+  sonarr_archive:
+    priority: 6
+    disable:
+      - seen
+      - seen_info_hash
+      - retry_failed
+    thetvdb_lookup: yes
+    trakt_lookup:
+      account: "{? trakt.account ?}"
+      username: "{? trakt.account ?}"
+    trakt_list:
+      account: '{? trakt.account ?}'
+      list: '{? trakt.series ?}'
+      type: shows
+    if:
+      - "tvdb_status == 'Ended' and trakt_watched": accept
+    list_remove:
+      - sonarr_list:
+          base_url: http://localhost
+          port: 8989
+          api_key: '{? sonarr.api ?}'
+          ignore_episodes_with_files: yes
+          ignore_episodes_without_files: yes
+    list_add:
+      - trakt_list:
+          account: '{? trakt.account ?}'
+          list: '{? trakt.archive ?}'
+          type: shows
+
+# Remove any shows from Sonarr that are in the deleted list
   sonarr_cleanup:
-    priority: 5
+    priority: 7
     disable:
       - seen
       - seen_info_hash
@@ -183,3 +214,20 @@ tasks:
           api_key: '{? sonarr.api ?}'
           ignore_episodes_with_files: yes
           ignore_episodes_without_files: yes
+
+
+  import_archive:
+    manual: yes
+    disable:
+      - seen
+      - seen_info_hash
+      - retry_failed
+    trakt_list:
+      account: '{? trakt.account ?}'
+      list: '{? trakt.archive ?}'
+      type: shows
+    list_add:
+      - trakt_list:
+          account: '{? trakt.account ?}'
+          list: '{? trakt.series ?}'
+          type: shows
