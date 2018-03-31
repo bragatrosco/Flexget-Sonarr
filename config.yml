@@ -214,20 +214,3 @@ tasks:
           api_key: '{? sonarr.api ?}'
           ignore_episodes_with_files: yes
           ignore_episodes_without_files: yes
-
-
-  import_archive:
-    manual: yes
-    disable:
-      - seen
-      - seen_info_hash
-      - retry_failed
-    trakt_list:
-      account: '{? trakt.account ?}'
-      list: '{? trakt.archive ?}'
-      type: shows
-    list_add:
-      - trakt_list:
-          account: '{? trakt.account ?}'
-          list: '{? trakt.series ?}'
-          type: shows
