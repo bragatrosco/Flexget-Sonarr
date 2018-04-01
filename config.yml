@@ -11,16 +11,18 @@ tasks:
       - seen
       - seen_info_hash
       - retry_failed
+    thetvdb_lookup: yes
+    tvmaze_lookup: yes
     trakt_lookup:
       account: "{? trakt.account ?}"
       username: "{? trakt.account ?}"
     trakt_list:
       account: '{? trakt.account ?}'
-      list: '{? trakt.anime ?}'
+      list: '{? trakt.series ?}'
       type: shows
     if:
+      - "tvmaze_series_language == 'Japanese' and tvmaze_series_show_type == 'Animation' or 'anime' in trakt_genres": accept
       - trakt_watched: reject
-    accept_all: yes
     list_add:
       - sonarr_list:
           base_url: http://localhost
@@ -28,7 +30,7 @@ tasks:
           api_key: '{? sonarr.api ?}'
           series_type: anime
           tags: [1]
-          root_folder_path: "/{? folder.anime ?}"
+          root_folder_path: "/{? folder.series ?}"
           ignore_episodes_with_files: yes
           search_missing_episodes: yes
 
@@ -41,15 +43,18 @@ tasks:
       - seen
       - seen_info_hash
       - retry_failed
+    thetvdb_lookup: yes
+    tvmaze_lookup: yes
     trakt_lookup:
       account: "{? trakt.account ?}"
       username: "{? trakt.account ?}"
     trakt_list:
       account: '{? trakt.account ?}'
-      list: '{? trakt.anime ?}'
+      list: '{? trakt.series ?}'
       type: shows
     if:
-      - "tvdb_status != 'Ended' and trakt_watched": accept
+      - "tvmaze_series_language == 'Japanese' and tvmaze_series_show_type == 'Animation' or 'anime' in trakt_genres ": accept
+      - "tvdb_status == 'Ended' or trakt_watched == 'False'": reject
     list_add:
       - sonarr_list:
           base_url: http://localhost
@@ -57,7 +62,7 @@ tasks:
           api_key: '{? sonarr.api ?}'
           series_type: anime
           tags: [1]
-          root_folder_path: "/{? folder.anime ?}"
+          root_folder_path: "/{? folder.series ?}"
           ignore_episodes_with_files: yes
           ignore_episodes_without_files: yes
 
@@ -145,6 +150,7 @@ tasks:
 # Archive any shows that have ended and have finished, remove from Sonarr and add to archive
 
   sonarr_archive:
+    delay: 5 days
     priority: 6
     disable:
       - seen
@@ -175,23 +181,30 @@ tasks:
 
 # Remove any shows from Sonarr that are in the deleted list
   sonarr_cleanup:
+    delay: 5 days
     priority: 7
     disable:
       - seen
       - seen_info_hash
       - retry_failed
-    trakt_list:
-      account: '{? trakt.account ?}'
-      list: '{? trakt.delete ?}'
-      type: shows
+    thetvdb_lookup: yes
+    sonarr_list:
+      base_url: http://localhost
+      port: 8989
+      api_key: '{? sonarr.api ?}'
+    list_match:
+      from:
+        - trakt_list:
+            account: '{? trakt.account ?}'
+            list: '{? trakt.series ?}'
+            type: shows
+      action: reject
     accept_all: yes
     list_remove:
       - sonarr_list:
           base_url: http://localhost
           port: 8989
           api_key: '{? sonarr.api ?}'
-          ignore_episodes_with_files: yes
-          ignore_episodes_without_files: yes
 
 ### CLEAR-SONARR #
 # Manual task to clear Sonarr for testing
