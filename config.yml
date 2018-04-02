@@ -2,8 +2,8 @@ variables: secrets.yml
 tasks:
 
 ### ANIME-SONARR #
-# Get from anime list any shows that have uneen episodes, add to Sonarr and search for missing
-# Also added with anime tag, tag list from http://localhost:8989/api/tag?apikey=APIKEY
+# Get from anime list any shows that have unseen episodes, add to Sonarr and search for missing
+# Also added with anime type and tag, tag list from http://localhost:8989/api/tag?apikey=APIKEY
 
   anime_unseen:
     priority: 1
@@ -36,6 +36,7 @@ tasks:
 
 # Get from anime list any shows that have already been seen, add to Sonarr and only get future episodes
 # Also added with anime tag, tag list from http://localhost:8989/api/tag?apikey=APIKEY
+# Skip ended to keep Sonarr clean
 
   anime_seen:
     priority: 2
@@ -67,7 +68,7 @@ tasks:
           ignore_episodes_without_files: yes
 
 ### SERIES-SONARR #
-# Get from series list any shows that have uneen episodes, add to Sonarr and search for missing
+# Get from series list any shows that have unseen episodes, add to Sonarr and search for missing
 
   series_unseen:
     priority: 3
@@ -95,6 +96,7 @@ tasks:
           search_missing_episodes: yes
 
 # Get from series list any shows that have already been seen, add to Sonarr and only get future episodes
+# Skip ended to keep Sonarr clean
 
   series_seen:
     priority: 4
@@ -147,39 +149,8 @@ tasks:
           type: movies
 
 ### CLEANUP-SONARR #
-# Archive any shows that have ended and have finished, remove from Sonarr and add to archive
+# Remove any shows from Sonarr that are not in series list
 
-  sonarr_archive:
-    delay: 5 days
-    priority: 6
-    disable:
-      - seen
-      - seen_info_hash
-      - retry_failed
-    thetvdb_lookup: yes
-    trakt_lookup:
-      account: "{? trakt.account ?}"
-      username: "{? trakt.account ?}"
-    trakt_list:
-      account: '{? trakt.account ?}'
-      list: '{? trakt.series ?}'
-      type: shows
-    if:
-      - "tvdb_status == 'Ended' and trakt_watched": accept
-    list_remove:
-      - sonarr_list:
-          base_url: http://localhost
-          port: 8989
-          api_key: '{? sonarr.api ?}'
-          ignore_episodes_with_files: yes
-          ignore_episodes_without_files: yes
-    list_add:
-      - trakt_list:
-          account: '{? trakt.account ?}'
-          list: '{? trakt.archive ?}'
-          type: shows
-
-# Remove any shows from Sonarr that are in the deleted list
   sonarr_cleanup:
     delay: 5 days
     priority: 7
@@ -209,7 +180,7 @@ tasks:
 ### CLEAR-SONARR #
 # Manual task to clear Sonarr for testing
 
-  clear:
+  clear-sonarr:
     manual: yes
     disable:
       - seen
