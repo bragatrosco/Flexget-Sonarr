@@ -149,16 +149,19 @@ tasks:
           type: movies
 
 ### CLEANUP-SONARR #
-# Remove any shows from Sonarr that are not in series list
+# List compare Sonarr and series list, anything in Sonarr that is not in series list is added to entry_list sonarr-rm
+# A direct list match between trakt and Sonarr does not work and removes shows incorrectly
 
-  sonarr_cleanup:
-    delay: 5 days
+  sonarr_trakt_compare:
+    delay: 1 days
     priority: 7
     disable:
       - seen
       - seen_info_hash
       - retry_failed
-    thetvdb_lookup: yes
+    list_clear:
+      what:
+        - entry_list: sonarr-rm
     sonarr_list:
       base_url: http://localhost
       port: 8989
@@ -171,11 +174,26 @@ tasks:
             type: shows
       action: reject
     accept_all: yes
+    list_add:
+      - entry_list: sonarr-rm
+
+# From list above, remove shows from Sonarr
+
+  sonarr_rm:
+    delay: 1 days
+    priority: 7
+    disable:
+      - seen
+      - seen_info_hash
+      - retry_failed
+    entry_list: sonarr-rm
+    accept_all: yes
     list_remove:
       - sonarr_list:
           base_url: http://localhost
           port: 8989
           api_key: '{? sonarr.api ?}'
+
 
 ### CLEAR-SONARR #
 # Manual task to clear Sonarr for testing
