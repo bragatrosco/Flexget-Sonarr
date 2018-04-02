@@ -1,7 +1,7 @@
 # Flexget config for Sonarr
 
-* [https://flexget.com/](Flexget.com)
-* [https://sonarr.tv/](Sonarr.tv)
+* https://flexget.com/
+* https://sonarr.tv/
 
 ## Series
 From Trakt list to Sonarr, if the series has completed watched status, only future episode tracking. 
