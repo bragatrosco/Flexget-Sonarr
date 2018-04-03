@@ -17,7 +17,8 @@ Check new releases list, if rating and vote requirements are met, add to watchli
 
 ## Changelog
 ```
-Cleanup task back to one without a list. Adding trakt_lookup: yes is required to find the correct show in Sonarr. Added to task
+Cleanup task back to one without a list. 
+Adding trakt_lookup: yes is required to find the correct show in Sonarr. Added to task
 ```
 ```
 Split cleanup task into 2 parts, a direct list compare between Trakt and Sonarr does not work
