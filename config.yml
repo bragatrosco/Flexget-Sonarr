@@ -123,11 +123,63 @@ tasks:
           ignore_episodes_without_files: yes
           root_folder_path: "/{? folder.series ?}"
 
+### CLEANUP-SONARR #
+# List compare Sonarr and series list, anything in Sonarr that is not in series list is added to entry_list sonarr-rm
+# A direct list match between trakt and Sonarr does not work and removes shows incorrectly
+
+  clean-compare:
+    delay: 1 days
+    priority: 6
+    disable:
+      - seen
+      - seen_info_hash
+      - retry_failed
+    trakt_lookup: yes
+    sonarr_list:
+      base_url: http://localhost
+      port: 8989
+      api_key: '{? sonarr.api ?}'
+    list_match:
+      from:
+        - trakt_list:
+            account: '{? trakt.account ?}'
+            list: '{? trakt.series ?}'
+            type: shows
+      action: reject
+    accept_all: yes
+    list_remove:
+      - sonarr_list:
+          base_url: http://localhost
+          port: 8989
+          api_key: '{? sonarr.api ?}'
+
+### CLEAR-SONARR #
+# Manual task to clear Sonarr for testing
+
+  deleteall:
+    manual: yes
+    disable:
+      - seen
+      - seen_info_hash
+      - retry_failed
+    trakt_list:
+      account: '{? trakt.account ?}'
+      list: '{? trakt.series ?}'
+      type: shows
+    accept_all: yes
+    list_remove:
+      - sonarr_list:
+          base_url: http://localhost
+          port: 8989
+          api_key: '{? sonarr.api ?}'
+          ignore_episodes_with_files: yes
+          ignore_episodes_without_files: yes
+
 ### MOVIES-TRAKT #
 # Check for new releases matching criteria and add to watchlist
 
   new-movies:
-    priority: 5
+    priority: 10
     imdb_lookup: yes
     trakt_list:
       username: giladg
@@ -148,71 +200,4 @@ tasks:
           list: '{? trakt.movies ?}'
           type: movies
 
-### CLEANUP-SONARR #
-# List compare Sonarr and series list, anything in Sonarr that is not in series list is added to entry_list sonarr-rm
-# A direct list match between trakt and Sonarr does not work and removes shows incorrectly
 
-  sonarr_trakt_compare:
-    delay: 1 days
-    priority: 7
-    disable:
-      - seen
-      - seen_info_hash
-      - retry_failed
-    list_clear:
-      what:
-        - entry_list: sonarr-rm
-    sonarr_list:
-      base_url: http://localhost
-      port: 8989
-      api_key: '{? sonarr.api ?}'
-    list_match:
-      from:
-        - trakt_list:
-            account: '{? trakt.account ?}'
-            list: '{? trakt.series ?}'
-            type: shows
-      action: reject
-    accept_all: yes
-    list_add:
-      - entry_list: sonarr-rm
-
-# From list above, remove shows from Sonarr
-
-  sonarr_rm:
-    delay: 1 days
-    priority: 7
-    disable:
-      - seen
-      - seen_info_hash
-      - retry_failed
-    entry_list: sonarr-rm
-    accept_all: yes
-    list_remove:
-      - sonarr_list:
-          base_url: http://localhost
-          port: 8989
-          api_key: '{? sonarr.api ?}'
-
-
-### CLEAR-SONARR #
-# Manual task to clear Sonarr for testing
-
-  clear-sonarr:
-    manual: yes
-    disable:
-      - seen
-      - seen_info_hash
-      - retry_failed
-    trakt_list:
-      account: '{? trakt.account ?}'
-      list: '{? trakt.series ?}'
-      type: shows
-    accept_all: yes
-    list_remove:
-      - sonarr_list:
-          base_url: http://localhost
-          port: 8989
-          api_key: '{? sonarr.api ?}'
-          ignore_episodes_with_files: yes
-          ignore_episodes_without_files: yes
